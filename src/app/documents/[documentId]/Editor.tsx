@@ -8,6 +8,7 @@ import Table from "@tiptap/extension-table";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
+import TextAlign from "@tiptap/extension-text-align"
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link"
 import { Color } from "@tiptap/extension-color";
@@ -18,11 +19,16 @@ import FontFamily from '@tiptap/extension-font-family';
 import TextStyle from "@tiptap/extension-text-style";
 
 import { useEditorStore } from "@/store/use-editor-store";
+import { FontSizeExtension } from "@/extensions/font-size";
+import { LineHeightExtension } from "@/extensions/line-height";
+import { Ruler } from "./ruler";
+
 
 export const Editor = () => {
   const { setEditor } = useEditorStore();
 
   const editor = useEditor({
+    immediatelyRender: false,
     onCreate({ editor }) {
       setEditor(editor);
     },
@@ -57,6 +63,13 @@ export const Editor = () => {
     },
     extensions: [
       StarterKit,
+      LineHeightExtension.configure({
+        types: ["heading", "paragraph"]
+      }),
+      FontSizeExtension,
+      TextAlign.configure({
+        types: ["heading", "paragraph"]
+      }),
       Color, 
       Highlight.configure({
         multicolor: true,
@@ -83,5 +96,11 @@ export const Editor = () => {
     content: "<p>Hello World! 🌎️</p>",
   });
 
-  return <EditorContent editor={editor} />;
+  return (<div className="size-full overflow-x-auto bg-[#F9FBFD] px-4 print:p-0 print:bg-white print:overflow-visible">
+    <Ruler/>
+    <div className="min-w-max flex justify-center w-[816px] py-4 print:py-0 mx-auto print:w-full print:min-w-0">
+  <EditorContent editor={editor} />
+    </div>
+  </div>
+  )
 };
