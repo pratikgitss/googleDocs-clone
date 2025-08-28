@@ -8,23 +8,35 @@ import Table from "@tiptap/extension-table";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
-import TextAlign from "@tiptap/extension-text-align"
+import TextAlign from "@tiptap/extension-text-align";
 import Image from "@tiptap/extension-image";
-import Link from "@tiptap/extension-link"
+import Link from "@tiptap/extension-link";
 import { Color } from "@tiptap/extension-color";
-import Highlight from "@tiptap/extension-highlight"
+import Highlight from "@tiptap/extension-highlight";
 import ImageResize from "tiptap-extension-resize-image";
-import Underline from '@tiptap/extension-underline';
-import FontFamily from '@tiptap/extension-font-family';
+import Underline from "@tiptap/extension-underline";
+import FontFamily from "@tiptap/extension-font-family";
 import TextStyle from "@tiptap/extension-text-style";
 
+import { useLiveblocksExtension } from "@liveblocks/react-tiptap";
 import { useEditorStore } from "@/store/use-editor-store";
 import { FontSizeExtension } from "@/extensions/font-size";
 import { LineHeightExtension } from "@/extensions/line-height";
 import { Ruler } from "./ruler";
+import { Threads } from "./threads";
+import { useStorage } from "@liveblocks/react";
 
+interface EditorProps {
+  initialContent?: string | undefined;
+}
 
-export const Editor = () => {
+export const Editor = ({ initialContent }: EditorProps) => {
+  const leftMargin = useStorage((root) => root.leftMargin);
+  const rightMargin = useStorage((root) => root.rightMargin);
+  const liveblocks = useLiveblocksExtension({
+    initialContent,
+    offlineSupport_experimental: true,
+  });
   const { setEditor } = useEditorStore();
 
   const editor = useEditor({
@@ -56,32 +68,35 @@ export const Editor = () => {
 
     editorProps: {
       attributes: {
-        style: "padding-right: 56px; padding-left:56px",
+        style: `padding-right: ${rightMargin ?? 56}px; padding-left: ${leftMargin ?? 56}px`,
         class:
           "focus:outline-none print:border-0 bg-white border border-[#C7C7C7] flex flex-col min-h-[1054px] w-[816px] pt-10 pr-14 pb-10 cursor-text",
       },
     },
     extensions: [
-      StarterKit,
+      liveblocks,
+      StarterKit.configure({
+        history: false,
+      }),
       LineHeightExtension.configure({
-        types: ["heading", "paragraph"]
+        types: ["heading", "paragraph"],
       }),
       FontSizeExtension,
       TextAlign.configure({
-        types: ["heading", "paragraph"]
+        types: ["heading", "paragraph"],
       }),
-      Color, 
+      Color,
       Highlight.configure({
         multicolor: true,
       }),
       Link.configure({
         openOnClick: false,
         autolink: true,
-        defaultProtocol: "https"
+        defaultProtocol: "https",
       }),
       TextStyle,
       FontFamily,
-      Underline,      
+      Underline,
       ImageResize,
       Image,
       TaskItem.configure({
@@ -93,14 +108,15 @@ export const Editor = () => {
       TableHeader,
       TableRow,
     ],
-    content: "<p>Hello World! 🌎️</p>",
   });
 
-  return (<div className="size-full overflow-x-auto bg-[#F9FBFD] px-4 print:p-0 print:bg-white print:overflow-visible">
-    <Ruler/>
-    <div className="min-w-max flex justify-center w-[816px] py-4 print:py-0 mx-auto print:w-full print:min-w-0">
-  <EditorContent editor={editor} />
+  return (
+    <div className="size-full overflow-x-auto bg-[#F9FBFD] px-4 print:p-0 print:bg-white print:overflow-visible">
+      <Ruler />
+      <div className="min-w-max flex justify-center w-[816px] py-4 print:py-0 mx-auto print:w-full print:min-w-0">
+        <EditorContent editor={editor} />
+        <Threads editor={editor} />
+      </div>
     </div>
-  </div>
-  )
+  );
 };
